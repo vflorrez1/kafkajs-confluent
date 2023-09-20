@@ -11,7 +11,8 @@ dotenv.config();
 const broker = process.env.KAFKA_BROKER || "";
 const userKey = process.env.KAFKA_USERNAME || "";
 const userPass = process.env.KAFKA_PASSWORD || "";
-const clinedId = process.env.KAFKA_CLIENT_ID || "test-id";
+const clientId = process.env.KAFKA_CLIENT_ID || "test-id";
+
 const consumerGroup =
   process.env.KAFKA_CONSUMER_GROUP_ID || "some-consumer-group";
 
@@ -41,7 +42,7 @@ export default class ConusmerFactory {
         },
       });
     } catch (error) {
-      console.log("Error: ", error);
+      console.log("BIG FAT ERROR???????? ", error);
     }
   }
 
@@ -52,7 +53,7 @@ export default class ConusmerFactory {
   private createKafkaConsumer(): Consumer {
     const kafka = new Kafka({
       logLevel: 4,
-      clientId: clinedId,
+      clientId: clientId,
       brokers: [broker],
       ssl: true,
       sasl: {
@@ -61,7 +62,31 @@ export default class ConusmerFactory {
         password: userPass,
       },
     });
+    kafka.logger;
     const consumer = kafka.consumer({ groupId: consumerGroup });
+
+    consumer.on("consumer.connect", () => {
+      console.info("[Kafka] Connected to Kafka");
+    });
+
+    consumer.on("consumer.crash", (e) => {
+      console.log("big fat crash??", e);
+    });
+    consumer.on("consumer.rebalancing", () =>
+      console.info("[Kafka] Rebalancing topic")
+    );
+
+    consumer.on("consumer.stop", () =>
+      console.info("[Kafka] Kafka consumer stopped")
+    );
+
+    consumer.on("consumer.group_join", () => {
+      console.info("[Kafka] Consumer connected and joined the group");
+    });
+
+    consumer.on("consumer.disconnect", () => {
+      console.info("[Kafka] Consumer disconnected");
+    });
     return consumer;
   }
 }
