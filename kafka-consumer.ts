@@ -6,7 +6,7 @@ import {
 } from "kafkajs";
 import dotenv from "dotenv";
 import LoggerConsole from "./logger/console";
-import { authFailedString } from "./constants";
+import { authFailedRegexStr } from "./constants";
 
 dotenv.config();
 
@@ -44,7 +44,7 @@ export default class ConusmerFactory {
         },
       });
     } catch (error: any) {
-      if (error.message.match(authFailedString)) {
+      if (error.message.match(authFailedRegexStr)) {
         // we need to emit auth failed metric
         console.log("AUTH FAILED: in kafka-consumer.ts", error.message);
       }

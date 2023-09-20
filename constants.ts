@@ -1,1 +1,1 @@
-export const authFailedString = /authentication failed/i;
+export const authFailedRegexStr = /authentication failed/i;

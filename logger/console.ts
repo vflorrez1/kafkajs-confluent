@@ -1,5 +1,5 @@
 import { LogEntry, LogLevel } from "./types";
-import { authFailedString } from "../constants";
+import { authFailedRegexStr } from "../constants";
 
 const CustomConsoleLogger =
   () =>
@@ -17,7 +17,7 @@ const CustomConsoleLogger =
     // [SaslAuthenticator-PLAIN] SASL PLAIN authentication failed: Authentication failed
     if (
       namespace === "SaslAuthenticator-PLAIN" &&
-      log.message.match(authFailedString)
+      log.message.match(authFailedRegexStr)
     ) {
       // we need to emit auth failed metric
       console.log("AUTH FAILED in /logger/console.ts", log.message);
