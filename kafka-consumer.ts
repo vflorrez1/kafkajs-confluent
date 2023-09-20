@@ -3,40 +3,23 @@ import {
   ConsumerSubscribeTopics,
   EachBatchPayload,
   Kafka,
-  EachMessagePayload,
 } from "kafkajs";
-// import ip from 'ip';
-// import fs from 'fs';
+import dotenv from "dotenv";
 
-// const host = process.env.HOST_IP || ip.address()
+dotenv.config();
+
+const broker = process.env.KAFKA_BROKER || "";
+const userKey = process.env.KAFKA_USERNAME || "";
+const userPass = process.env.KAFKA_PASSWORD || "";
+const clinedId = process.env.KAFKA_CLIENT_ID || "test-id";
+const consumerGroup =
+  process.env.KAFKA_CONSUMER_GROUP_ID || "some-consumer-group";
 
 export default class ConusmerFactory {
   private kafkaConsumer: Consumer;
 
   public constructor() {
     this.kafkaConsumer = this.createKafkaConsumer();
-  }
-
-  public async startConsumer(theTopic: string): Promise<void> {
-    const topic: ConsumerSubscribeTopics = {
-      topics: [theTopic],
-      fromBeginning: false,
-    };
-
-    try {
-      await this.kafkaConsumer.connect();
-      await this.kafkaConsumer.subscribe(topic);
-
-      await this.kafkaConsumer.run({
-        eachMessage: async (messagePayload: EachMessagePayload) => {
-          const { topic, partition, message } = messagePayload;
-          const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
-          console.log(`- ${prefix} ${message.key}#${message.value}`);
-        },
-      });
-    } catch (error) {
-      console.log("Error: ", error);
-    }
   }
 
   public async startBatchConsumer(theTopic: string): Promise<void> {
@@ -69,22 +52,16 @@ export default class ConusmerFactory {
   private createKafkaConsumer(): Consumer {
     const kafka = new Kafka({
       logLevel: 4,
-      clientId: "example-consumer",
-      // brokers: [`localhost:9092`],
-      brokers: ["pkc-ymrq7.us-east-2.aws.confluent.cloud:9092"],
-      // ssl: {
-      //   servername: 'localhost',
-      //   rejectUnauthorized: false,
-      //   ca: [fs.readFileSync('./testHelpers/certs/cert-signed', 'utf-8')],
-      // },
+      clientId: clinedId,
+      brokers: [broker],
+      ssl: true,
       sasl: {
         mechanism: "plain",
-        username: "N7QZA3ALE2UYJ35Y",
-        password:
-          "bEDi3BG0HJ7RihgmFyZUJ7xTd/rXNoBm8P+Mw+j7lNv2WdHuvrBUR0Hpzo966Mak",
+        username: userKey,
+        password: userPass,
       },
     });
-    const consumer = kafka.consumer({ groupId: "consumer-group" });
+    const consumer = kafka.consumer({ groupId: consumerGroup });
     return consumer;
   }
 }

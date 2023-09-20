@@ -6,10 +6,9 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.CONSUMER_PORT;
-
+const topic = process.env.KAFKA_TOPIC || "";
 const consumer = new ConusmerFactory();
-consumer.startBatchConsumer("topic_2");
-// consumer.startConsumer("topic_2");
+consumer.startBatchConsumer(topic);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Is consuming");
