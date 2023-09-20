@@ -5,6 +5,8 @@ import {
   Kafka,
 } from "kafkajs";
 import dotenv from "dotenv";
+import LoggerConsole from "./logger/console";
+import { authFailedString } from "./constants";
 
 dotenv.config();
 
@@ -41,8 +43,12 @@ export default class ConusmerFactory {
           }
         },
       });
-    } catch (error) {
-      console.log("BIG FAT ERROR???????? ", error);
+    } catch (error: any) {
+      if (error.message.match(authFailedString)) {
+        // we need to emit auth failed metric
+        console.log("AUTH FAILED: in kafka-consumer.ts", error.message);
+      }
+      console.log("Error: ", error);
     }
   }
 
@@ -52,7 +58,9 @@ export default class ConusmerFactory {
 
   private createKafkaConsumer(): Consumer {
     const kafka = new Kafka({
-      logLevel: 4,
+      logLevel: 1,
+      // @ts-ignore
+      logCreator: LoggerConsole,
       clientId: clientId,
       brokers: [broker],
       ssl: true,
@@ -62,7 +70,6 @@ export default class ConusmerFactory {
         password: userPass,
       },
     });
-    kafka.logger;
     const consumer = kafka.consumer({ groupId: consumerGroup });
 
     consumer.on("consumer.connect", () => {
